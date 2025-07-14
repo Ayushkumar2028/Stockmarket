@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 style="margin: 20px;">Your Holdings</h2>
+
+<div class="wrapper">
+  <div class="card-container">
+    {% for h in holdings %}
+    <div class="card">
+      <h3>{{ h.stock.name }}</h3>
+      <div class="card-price">
+        <p>{{ h.stock.ticker }}</p>
+        <p>Quantity: {{ h.purchase_quantity }}</p>
+        <p>Avg. Price: ${{ h.purchase_price }}</p>
+        <p>Total Value: ${{ h.purchase_price|floatformat:2|add:"0"|floatformat:"2"|floatformat:"2"|floatformat:"2"|add:""|floatformat:"2"|add:""|add:""|add:""|add:"" }}</p>
+      </div>
+    </div>
+    {% empty %}
+    <p>You don’t hold any stocks yet.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
