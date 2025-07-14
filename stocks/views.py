@@ -116,7 +116,7 @@ def loginView(request):
         else:
             messages.error(request, "Invalid credentials")
 
-    return render(request, 'login.html')
+    return render(request, 'registration/login.html')
 
 
 def logoutView(request) :
