@@ -65,27 +65,6 @@ def index(request):
     return render(request, 'index.html', context)
 
 
-    def getStock(ticker):
-        url  = f"https://api.tiingo.com/tiingo/daily/{ticker}?token={token}"
-        priceurl  =  f"https://api.tiingo.com/tiingo/daily/{ticker}/prices?token={token}"
-        requestResponse = requests.get(url, headers=headers )
-        Metadata  = requestResponse.json()
-        print(Metadata)
-        priceData  = requests.get(priceurl , headers=headers)
-        print(priceData.json())
-        priceData =  priceData.json()[0]['close']
-
-        # insert into SQL
-        stock = Stocks(ticker  = Metadata['ticker']  , name  =  Metadata['name'] ,  description =  Metadata['description'] , curr_price  = priceData)
-        stock.save()
-
-    nasdaq_tickers =  nasdaq_tickers[11:30]
-    for i in nasdaq_tickers :
-        getStock(i)
-
-
-    return HttpResponse("Stock Data Downloaded")
-
 
 @login_required
 def stocks(request):
@@ -111,12 +90,11 @@ def loginView(request):
         user = authenticate(username=username, password=password)
         if user:
             login(request, user)
-            next_url = request.GET.get('next', 'index')
-            return redirect(next_url)
+            return redirect('index')
         else:
             messages.error(request, "Invalid credentials")
 
-    return render(request, 'registration/login.html')
+    return render(request, 'login.html')
 
 
 def logoutView(request) :
@@ -210,26 +188,20 @@ def buy(request , id) :
     return redirect('index')
 
 
-@login_required
+
 def  sell(request , id) :
     stock = get_object_or_404(Stocks, id=id)
     user = request.user
     sell_quantity = int(request.POST.get('quantity'))
+    userStock  =  UserStock.objects.filter(stock  =  stock ,  user =  user).first()
 
-    userStock = UserStock.objects.filter(stock=stock, user=user).first()
-
-    if not userStock:
-        messages.error(request, f"You don't own any shares of {stock.name} to sell.")
-        return redirect('stocks')
-
-    if userStock.purchase_quantity < sell_quantity:
-        messages.error(request, f"You can't sell {sell_quantity} shares. You only own {userStock.purchase_quantity}.")
-        return redirect('stocks')
+    if userStock.purchase_quantity <  sell_quantity :
+        messages.error(request, "Can't sell more than you own")
+        return redirect('market')
 
     userStock.purchase_quantity -= sell_quantity
     userStock.save()
-
-    threading.Thread(
+    t1 = threading.Thread(
         target=send_email_async,
         kwargs={
             "subject": "Sell Option executed successfully",
@@ -237,7 +209,8 @@ def  sell(request , id) :
             "from_email": None,
             "recipient_list": [user.email],
         }
-    ).start()
+    )
+    t1.start()
 
     return redirect('index')
 
