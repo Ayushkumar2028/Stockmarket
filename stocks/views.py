@@ -198,9 +198,12 @@ def  sell(request , id) :
     sell_quantity = int(request.POST.get('quantity'))
     userStock  =  UserStock.objects.filter(stock  =  stock ,  user =  user).first()
 
+    if not userStock:  # case 1: user never bought this stock
+        messages.error(request, "You don't own this stock")
+        return redirect('stocks')
     if userStock.purchase_quantity <  sell_quantity :
         messages.error(request, "Can't sell more than you own")
-        return redirect('market')
+        return redirect('stocks')
 
     userStock.purchase_quantity -= sell_quantity
     userStock.save()
