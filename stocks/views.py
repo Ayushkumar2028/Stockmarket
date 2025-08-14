@@ -87,12 +87,15 @@ def loginView(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-        user = authenticate(username=username, password=password)
+        user = authenticate(request,username=username, password=password)
         if user:
             login(request, user)
+            # next_url = request.GET.get('next')
+            # if next_url:
+            #     return redirect(next_url)  # absolute URL like /stocks/
             return redirect('index')
         else:
-            messages.error(request, "Invalid credentials")
+            return render(request, 'login.html', {'error': 'Invalid credentials'})
 
     return render(request, 'login.html')
 

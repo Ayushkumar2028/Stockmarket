@@ -23,6 +23,7 @@ from .views import index ,  stocks , loginView , logoutView , register ,  buy , 
 
 urlpatterns = [
     path('',  index, name  = 'index'),
+    path('stocks/login/',stocks,name='stocks'),
     path('stocks/' ,stocks , name  = 'stocks') ,
     path('login/' , loginView , name  = 'login') ,
     path('accounts/logout/' ,  logoutView , name = 'logout') ,
